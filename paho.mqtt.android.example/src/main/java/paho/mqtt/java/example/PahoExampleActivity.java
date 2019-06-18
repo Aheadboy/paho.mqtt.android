@@ -45,11 +45,15 @@ public class PahoExampleActivity extends AppCompatActivity {
     private static final String TAG = "PahoExampleActivity";
     MqttAndroidClient mqttAndroidClient;
 
-    final String serverUri = "tcp://iot.eclipse.org:1883";
+    final String serverUri = "tcp://post-cn-v0h13l4jk0c.mqtt.aliyuncs.com:1883";
+//    final String serverUri = "tcp://iot.eclipse.org:1883";
 
-    String clientId = "ExampleAndroidClient";
-    final String subscriptionTopic = "exampleAndroidTopic";
-    final String publishTopic = "exampleAndroidPublishTopic";
+    //    String clientId = "GID_001@@@100008";
+    String clientId = "GID_001@@@100008";
+    final String subscriptionTopic = "TP001";
+    //    final String subscriptionTopic = "exampleAndroidTopic";
+    final String publishTopic = "TP001";
+    //    final String publishTopic = "exampleAndroidPublishTopic";
     int publishMessage = 1;
 
 
@@ -78,8 +82,8 @@ public class PahoExampleActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
         //endregion
 
-        clientId = clientId + System.currentTimeMillis();
-        Log.i(TAG, "clientId" + clientId);
+//        clientId = clientId + System.currentTimeMillis();
+        Log.i(TAG, "clientId==" + clientId);
 
 
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
@@ -88,11 +92,11 @@ public class PahoExampleActivity extends AppCompatActivity {
             public void connectComplete(boolean reconnect, String serverURI) {
 
                 if (reconnect) {
-//                    addToHistory("Reconnected to : " + serverURI); todo-ljj-fortest
+                    addToHistory("Reconnected to : " + serverURI);
                     // Because Clean Session is true, we need to re-subscribe
                     subscribeToTopic();
                 } else {
-//                    addToHistory("Connected to: " + serverURI); todo-ljj-fortest
+                    addToHistory("Connected to: " + serverURI);
                 }
             }
 
@@ -115,6 +119,14 @@ public class PahoExampleActivity extends AppCompatActivity {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
+
+        mqttConnectOptions.setUserName("Signature|LTAImijAwIa4wQzJ|post-cn-v0h13l4jk0c");
+        mqttConnectOptions.setPassword("0w2WqN0mGFxY9L81gMX0SCfIRMc=".toCharArray());
+        String temp = "";
+        for (char c : mqttConnectOptions.getPassword()) {
+            temp += c;
+        }
+        Log.i(TAG, "password-chararray" + temp);
 
 
         //region MqttAndroidClient 链接，以及回调
@@ -212,7 +224,7 @@ public class PahoExampleActivity extends AppCompatActivity {
             MqttMessage message = new MqttMessage();
             message.setPayload((publishMessage++ + "").getBytes());
             mqttAndroidClient.publish(publishTopic, message);
-            addToHistory(publishMessage-1 + "");
+            addToHistory(publishMessage - 1 + "");
             if (!mqttAndroidClient.isConnected()) {
                 addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
             }
