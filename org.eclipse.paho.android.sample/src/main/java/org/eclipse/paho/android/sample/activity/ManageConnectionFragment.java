@@ -31,6 +31,9 @@ import org.eclipse.paho.android.sample.internal.Connections;
 import java.util.Map;
 
 
+/**
+ * 与mqtt服务器连接的配置，编辑界面
+ */
 public class ManageConnectionFragment extends Fragment {
     private Connection connection;
     private Map<String, Connection> connections;
