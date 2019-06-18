@@ -231,8 +231,8 @@ public class FragmentDrawer extends Fragment {
     }
 
     public interface FragmentDrawerListener {
-        void onDrawerItemSelected(int position);
-        void onDrawerItemLongSelected(int position);
+        void onDrawerItemSelected(int position);//Item选中，回主界面，
+        void onDrawerItemLongSelected(int position);//Item长按,显示删除编辑界面
         void onAddConnectionSelected();
         void onHelpSelected();
     }

@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,9 +37,12 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
 
-public class PahoExampleActivity extends AppCompatActivity{
-    private HistoryAdapter mAdapter;
+import static paho.mqtt.java.example.Constant.Qos_0_lowest;
+import static paho.mqtt.java.example.Constant.Qos_2_heighest;
 
+public class PahoExampleActivity extends AppCompatActivity {
+    private HistoryAdapter mAdapter;
+    private static final String TAG = "PahoExampleActivity";
     MqttAndroidClient mqttAndroidClient;
 
     final String serverUri = "tcp://iot.eclipse.org:1883";
@@ -46,13 +50,14 @@ public class PahoExampleActivity extends AppCompatActivity{
     String clientId = "ExampleAndroidClient";
     final String subscriptionTopic = "exampleAndroidTopic";
     final String publishTopic = "exampleAndroidPublishTopic";
-    final String publishMessage = "Hello World!";
+    int publishMessage = 1;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrolling);
+        //region 初始化ui
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -71,8 +76,11 @@ public class PahoExampleActivity extends AppCompatActivity{
 
         mAdapter = new HistoryAdapter(new ArrayList<String>());
         mRecyclerView.setAdapter(mAdapter);
+        //endregion
 
         clientId = clientId + System.currentTimeMillis();
+        Log.i(TAG, "clientId" + clientId);
+
 
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
@@ -80,11 +88,11 @@ public class PahoExampleActivity extends AppCompatActivity{
             public void connectComplete(boolean reconnect, String serverURI) {
 
                 if (reconnect) {
-                    addToHistory("Reconnected to : " + serverURI);
+//                    addToHistory("Reconnected to : " + serverURI); todo-ljj-fortest
                     // Because Clean Session is true, we need to re-subscribe
                     subscribeToTopic();
                 } else {
-                    addToHistory("Connected to: " + serverURI);
+//                    addToHistory("Connected to: " + serverURI); todo-ljj-fortest
                 }
             }
 
@@ -109,11 +117,7 @@ public class PahoExampleActivity extends AppCompatActivity{
         mqttConnectOptions.setCleanSession(false);
 
 
-
-
-
-
-
+        //region MqttAndroidClient 链接，以及回调
         try {
             //addToHistory("Connecting to " + serverUri);
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
@@ -135,17 +139,19 @@ public class PahoExampleActivity extends AppCompatActivity{
             });
 
 
-        } catch (MqttException ex){
+        } catch (MqttException ex) {
             ex.printStackTrace();
         }
+        //endregion
 
     }
 
-    private void addToHistory(String mainText){
-        System.out.println("LOG: " + mainText);
+    private void addToHistory(String mainText) {
+//        System.out.println("LOG: " + mainText);
+        Log.i(TAG, "LOG: " + mainText);
         mAdapter.add(mainText);
-        Snackbar.make(findViewById(android.R.id.content), mainText, Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
+
+        Snackbar.make(findViewById(android.R.id.content), mainText, Snackbar.LENGTH_LONG).setAction("Action", null).show();
 
     }
 
@@ -168,9 +174,9 @@ public class PahoExampleActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
-    public void subscribeToTopic(){
+    public void subscribeToTopic() {
         try {
-            mqttAndroidClient.subscribe(subscriptionTopic, 0, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(subscriptionTopic, Qos_0_lowest, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     addToHistory("Subscribed!");
@@ -183,7 +189,7 @@ public class PahoExampleActivity extends AppCompatActivity{
             });
 
             // THIS DOES NOT WORK!
-            mqttAndroidClient.subscribe(subscriptionTopic, 0, new IMqttMessageListener() {
+            mqttAndroidClient.subscribe(subscriptionTopic, Qos_0_lowest, new IMqttMessageListener() {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // message Arrived!
@@ -191,20 +197,23 @@ public class PahoExampleActivity extends AppCompatActivity{
                 }
             });
 
-        } catch (MqttException ex){
+        } catch (MqttException ex) {
             System.err.println("Exception whilst subscribing");
             ex.printStackTrace();
         }
     }
 
-    public void publishMessage(){
+    /**
+     * 发布消息
+     */
+    public void publishMessage() {
 
         try {
             MqttMessage message = new MqttMessage();
-            message.setPayload(publishMessage.getBytes());
+            message.setPayload((publishMessage++ + "").getBytes());
             mqttAndroidClient.publish(publishTopic, message);
-            addToHistory("Message Published");
-            if(!mqttAndroidClient.isConnected()){
+            addToHistory(publishMessage-1 + "");
+            if (!mqttAndroidClient.isConnected()) {
                 addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
             }
         } catch (MqttException e) {

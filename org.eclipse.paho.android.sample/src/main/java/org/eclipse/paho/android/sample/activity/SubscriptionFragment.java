@@ -47,16 +47,14 @@ public class SubscriptionFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Bundle bundle  = this.getArguments();
         String connectionHandle = bundle.getString(ActivityConstants.CONNECTION_KEY);
-        Map<String, Connection> connections = Connections.getInstance(this.getActivity())
-                .getConnections();
+        Map<String, Connection> connections = Connections.getInstance(this.getActivity()).getConnections();
         connection = connections.get(connectionHandle);
         subscriptions = connection.getSubscriptions();
 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_subscriptions, container, false);
         Button subscribeButton = (Button) rootView.findViewById(R.id.subscribe_button);
 
